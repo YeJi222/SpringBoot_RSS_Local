@@ -17,10 +17,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 @RequestMapping("/sendZipFileContent")
 public class UnzipController {
+    // http://localhost:9070/sendZipFileContent/url?content=https:%2F%2Fgithub.com%2FYeJi222%2FSpringBoot_Sample_Structure.git
+    // url로 넘겨진 content 매개변수 받아오기
+    final String getMappingValue = "/url";
+    @GetMapping(value = getMappingValue)
+    public String getSend(@RequestParam String content){
+        return content;
+    };
     static String findURL = "";
     static String findURL_format = "";
 
-    private static void searchFiles(String searchDirPath) throws IOException {
+    public static void searchFiles(String searchDirPath) throws IOException {
         File dirFile = new File(searchDirPath);
         File[] fileList = dirFile.listFiles();
 
@@ -70,6 +77,7 @@ public class UnzipController {
 
                             String content = responseEntity.getBody().replaceAll("%2F", "/");
                             System.out.println("\n[HTTP 전송]");
+                            System.out.println("uri : " + uri);
                             System.out.println("status code : " + responseEntity.getStatusCode());
                             System.out.println("content : " + content);
                         }
@@ -81,7 +89,7 @@ public class UnzipController {
         }
     }
 
-    private static void deleteUnzipFiles(ProcessBuilder builder) throws IOException {
+    public static void deleteUnzipFiles(ProcessBuilder builder) throws IOException {
         builder.command("rm", "-rf", "./unzipFiles/");
         var process = builder.start(); // upzip한 파일들 모두 삭제
 
@@ -92,53 +100,6 @@ public class UnzipController {
                 System.out.println(commandResult);
             }
         }
-        System.out.println("압축풀기한 파일들 모두 삭제 완료");
+        System.out.println("\n압축풀기한 파일들 모두 삭제 완료!!");
     }
-
-    public static void main(String[] args) throws IOException {
-        // 쉘 명령어 실행을 위한 ProcessBuilder 사용
-        ProcessBuilder builder = new ProcessBuilder();
-
-        // unzipFiles 폴더 생성 - 압축풀기한 파일들을 저장하는 임시 폴더
-        builder.command("mkdir", "unzipFiles");
-        builder.start();
-
-        File dirFile = new File("./unzipFiles");
-        File[] fileList = dirFile.listFiles();
-
-        if(fileList.length != 0){ // 기존에 압축풀기한 파일들이 존재하면 기존 파일들 삭제하고 시작
-            System.out.println("기존 파일들 존재! 삭제하고 시작!");
-            deleteUnzipFiles(builder);
-        }
-
-        // 파일 압축 풀기
-        builder.command("unzip", "unzipTest.zip", "-d", "./unzipFiles");
-        var process = builder.start(); // upzip 실행
-
-        // unzip 실행 후, 콘솔에 출력해주기
-        try (var reader = new BufferedReader(
-            new InputStreamReader(process.getInputStream()))) {
-            String commandResult;
-            while ((commandResult = reader.readLine()) != null) {
-                System.out.println(commandResult);
-            }
-        }
-
-        // 압축 푼 파일들 중에서 원하는 정보 찾기(ex. url 찾기)
-        String searchDirPath = "./unzipFiles";
-        System.out.println("\n[압축 해제한 폴더 속 파일 리스트]");
-        searchFiles(searchDirPath);
-
-        // content data 보냈으므로, 압축풀기한 파일들 모두 삭제
-        deleteUnzipFiles(builder);
-    }
-
-    final String getMappingValue = "/url";
-
-    // http://localhost:9070/sendZipFileContent/url?content=https:%2F%2Fgithub.com%2FYeJi222%2FSpringBoot_Sample_Structure.git
-    // url로 넘겨진 content 매개변수 받아오기
-    @GetMapping(value = getMappingValue)
-    public String getSend(@RequestParam String content){
-        return content;
-    };
 }
