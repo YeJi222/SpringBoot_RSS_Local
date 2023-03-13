@@ -1,7 +1,9 @@
 package com.readme.rss;
 
 import static com.readme.rss.controller.UnzipController.deleteUnzipFiles;
+import static com.readme.rss.controller.UnzipController.fileName;
 import static com.readme.rss.controller.UnzipController.searchFiles;
+import static java.lang.Thread.sleep;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,10 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class RssApplication {
-
-	public static void main(String[] args) throws IOException {
-		SpringApplication.run(RssApplication.class, args);
-
+	public static void subMainFunc() throws IOException {
 		// 쉘 명령어 실행을 위한 ProcessBuilder 사용
 		ProcessBuilder builder = new ProcessBuilder();
 
@@ -51,5 +50,22 @@ public class RssApplication {
 
 		// content data 보냈으므로, 압축풀기한 파일들 모두 삭제
 		deleteUnzipFiles(builder);
+	}
+
+	public static void main(String[] args) throws IOException, InterruptedException {
+		SpringApplication.run(RssApplication.class, args);
+
+		if(fileName == ""){ // zip 파일이 첨부되지 않았을 때
+			System.out.println("\nzip 파일이 첨부되지 않았습니다!");
+		}
+
+		while(true) {
+			// System.out.println("\nzip 파일이 첨부되지 않았습니다!");
+			sleep(1);
+			if (fileName != "") { // zip 파일이 입력되면
+				break;
+			}
+		}
+		subMainFunc();
 	}
 }
